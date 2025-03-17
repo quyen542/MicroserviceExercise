@@ -37,7 +37,7 @@ dependencies {
     implementation("org.modelmapper:modelmapper:3.1.1")
     annotationProcessor("org.projectlombok:lombok")
     implementation("org.projectlombok:lombok")
-    implementation ("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
     implementation("com.nimbusds:nimbus-jose-jwt:10.0.2")
 
@@ -45,6 +45,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka
     implementation("org.springframework.kafka:spring-kafka:3.3.3")
+
+    // https://mvnrepository.com/artifact/org.json/json
+    implementation("org.json:json:20250107")
 
 
 }

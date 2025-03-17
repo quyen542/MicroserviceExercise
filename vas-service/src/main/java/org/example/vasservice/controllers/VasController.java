@@ -1,14 +1,17 @@
 package org.example.vasservice.controllers;
 
+import jakarta.persistence.LockModeType;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.example.vasservice.dto.PaymentInfo;
 import org.example.vasservice.dto.PaymentRequest;
+import org.example.vasservice.dto.PurchaseRequest;
 import org.example.vasservice.entities.Account;
 import org.example.vasservice.idaAccount.MomoAccount;
 import org.example.vasservice.services.AccountService;
 import org.example.vasservice.services.PaymentClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -40,15 +43,16 @@ public class VasController {
   }
 
   @PostMapping("/payment")
-  public ResponseEntity<String> payment(@AuthenticationPrincipal Jwt jwt, @RequestParam("amount") BigDecimal amount) {
+  public ResponseEntity<String> payment(@AuthenticationPrincipal Jwt jwt,
+      @RequestParam("productId") Long productId) {
     String profileId = jwt.getClaim("profileId");
     Account account = accountService.findByProfileId(UUID.fromString(profileId));
-    PaymentRequest paymentRequestSrc = new PaymentRequest(account.getAccountNumber(), amount);
-    paymentClient.debit(paymentRequestSrc);
-    PaymentRequest paymentRequestDest = new PaymentRequest(momoAccount.getAccountNo(), amount);
+    if (account == null) {
+      return ResponseEntity.ofNullable("Not found account with profileId: " + profileId);
+    }
 
-    paymentClient.credit(paymentRequestDest);
-
+    paymentClient.purchase(PurchaseRequest.builder().productId(productId).sourceAccountNo(
+        account.getAccountNumber()).destinationAccountNo(momoAccount.getAccountNo()).build());
     return ResponseEntity.ok("Payment successful");
   }
 }
