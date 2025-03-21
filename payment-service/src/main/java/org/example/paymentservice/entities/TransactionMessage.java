@@ -8,9 +8,11 @@ import jakarta.persistence.Id;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class TransactionMessage {
 
   private UUID transactionId; // Mã giao dịch (UUID)
@@ -30,16 +32,4 @@ public class TransactionMessage {
 
   private String paymentInfo;
 
-  public TransactionMessage(UUID transactionId, String sourceAccount, String destinationAccount,
-      BigDecimal amount, BigDecimal newBalance, TransactionStatus status, LocalDateTime createdAt,
-      String paymentInfo) {
-    this.transactionId = transactionId;
-    this.sourceAccount = sourceAccount;
-    this.destinationAccount = destinationAccount;
-    this.amount = amount;
-    this.newBalance = newBalance;
-    this.status = status;
-    this.createdAt = createdAt;
-    this.paymentInfo = paymentInfo;
-  }
 }

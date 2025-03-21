@@ -22,7 +22,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @Table(name = "transactions")
 @AllArgsConstructor
-public class PaymentTransaction {
+@NoArgsConstructor
+public class PaymentTransaction extends Auditable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,13 +43,6 @@ public class PaymentTransaction {
   @Enumerated(EnumType.STRING)
   private TransactionStatus status; // Trạng thái giao dịch
 
-
-  private LocalDateTime createdAt;
-
   private String paymentInfo;
 
-
-  public PaymentTransaction() {
-
-  }
 }

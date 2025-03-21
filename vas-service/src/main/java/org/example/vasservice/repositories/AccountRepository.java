@@ -10,8 +10,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
-  @Lock(LockModeType.PESSIMISTIC_WRITE)
   Account findByProfileId(UUID profileId);
-  @Lock(LockModeType.PESSIMISTIC_WRITE)
   Optional<Account> findByAccountNumber(String accountNumber);
 }

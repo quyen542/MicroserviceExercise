@@ -10,4 +10,6 @@ import lombok.NoArgsConstructor;
 public class PaymentRequest {
   private String accountNo;
   private BigDecimal amount;
+  private Integer version;
+
 }

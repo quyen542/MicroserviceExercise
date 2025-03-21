@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -35,6 +36,9 @@ public class Account {
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "account")
   List<PaymentTransaction> transactions;
+
+  @Version // Hibernate sẽ tự động thêm "WHERE version = ?" khi UPDATE
+  private Integer version;
 
 
 

@@ -17,7 +17,7 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "transaction_history")
-public class TransactionHistory {
+public class TransactionHistory extends Auditable{
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,8 +35,6 @@ public class TransactionHistory {
 
   @Enumerated(EnumType.STRING)
   private TransactionStatus status; // Trạng thái giao dịch
-
-  private LocalDateTime createdAt;
 
   private String paymentInfo;
 }

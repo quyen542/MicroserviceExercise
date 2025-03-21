@@ -1,5 +1,8 @@
 package org.example.vasservice.component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -29,18 +32,11 @@ public class StartupListener {
   @KafkaListener(topics = "transaction", groupId = "vas")
   public void listen(String message) {
     try {
+      ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule())
+          .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);;
       // Chuyển đổi message JSON thành đối tượng TransactionHistory
-      JSONObject json = new JSONObject(message);
 
-      TransactionHistory transaction = new TransactionHistory();
-      transaction.setTransactionId(UUID.fromString(json.getString("transactionId")));
-      transaction.setSourceAccount(json.getString("sourceAccount"));
-      transaction.setDestinationAccount(json.getString("destinationAccount"));
-      transaction.setAmount(json.getBigDecimal("amount"));
-      transaction.setNewBalance(json.getBigDecimal("newBalance"));
-      transaction.setStatus(TransactionStatus.valueOf(json.getString("status")));
-      transaction.setCreatedAt(LocalDateTime.parse(json.getString("createdAt")));
-      transaction.setPaymentInfo(json.getString("paymentInfo"));
+      TransactionHistory transaction = objectMapper.readValue(message, TransactionHistory.class);
 
       accountService.updateAccountBalance(transaction.getSourceAccount(),
           transaction.getNewBalance());

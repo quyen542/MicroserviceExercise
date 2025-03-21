@@ -1,6 +1,7 @@
 package org.example.paymentservice.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.OptimisticLockException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,6 +15,8 @@ import org.example.paymentservice.exception.InsufficientBalanceException;
 import org.example.paymentservice.repositories.AccountRepository;
 import org.example.paymentservice.repositories.PaymentTransactionRepository;
 import org.example.paymentservice.repositories.ProductRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -21,7 +24,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class AccountServiceImp implements AccountService {
+public class PurchaseServiceImp implements PurchaseService {
 
   @Autowired
   private AccountRepository accountRepo;
@@ -35,20 +38,22 @@ public class AccountServiceImp implements AccountService {
   @Autowired
   private KafkaTemplate<String, String> kafkaTemplate;
 
-  public void sendMessage(String msg) {
-    kafkaTemplate.send("transaction", msg);
-  }
-
   @Autowired
   private ObjectMapper objectMapper;
 
+  private final Logger logger = LoggerFactory.getLogger(PurchaseServiceImp.class);
+
 
   @Override
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public boolean debit(String accountNumber, BigDecimal amount) {
+  @Transactional
+  public boolean debit(String accountNumber, BigDecimal amount, Integer version) {
     Account a = accountRepo.findByAccountNumber(accountNumber);
     if (a == null) {
       throw new IllegalArgumentException("Account not found: " + accountNumber);
+    }
+
+    if (!a.getVersion().equals(version)) {
+      throw new OptimisticLockException("Data is changed");
     }
 
     if (a.getBalance().compareTo(amount) < 0) {
@@ -61,9 +66,17 @@ public class AccountServiceImp implements AccountService {
   }
 
   @Override
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public boolean credit(String accountNumber, BigDecimal amount) {
+  @Transactional
+  public boolean credit(String accountNumber, BigDecimal amount, Integer version) {
     Account a = accountRepo.findByAccountNumber(accountNumber);
+
+    if (a == null) {
+      throw new IllegalArgumentException("Account not found: " + accountNumber);
+    }
+
+    if (!a.getVersion().equals(version)) {
+      throw new OptimisticLockException("Data is changed");
+    }
     a.setBalance(a.getBalance().add(amount));
     accountRepo.save(a);
     return true;
@@ -71,32 +84,33 @@ public class AccountServiceImp implements AccountService {
 
   @Override
   @Transactional
-  public void purchase(String sourceAccountNumber, String destinationAccountNo, Long productId) {
+  public PaymentTransaction purchase(String sourceAccountNumber, String destinationAccountNo,
+      Long productId,
+      Integer version) {
     Product product = productRepo.findById(productId)
         .orElseThrow(() -> new IllegalArgumentException("Product not found"));
     Account sourceAccount = accountRepo.findByAccountNumber(sourceAccountNumber);
     Account destinationAccount = accountRepo.findByAccountNumber(destinationAccountNo);
 
-    debit(sourceAccountNumber, product.getPrice());
+    debit(sourceAccountNumber, product.getPrice(), version);
 
     paymentRepo.save(
         PaymentTransaction.builder().transactionId(UUID.randomUUID()).amount(product.getPrice())
             .status(
-                TransactionStatus.SUCCESS).createdAt(LocalDateTime.now())
+                TransactionStatus.SUCCESS)
             .paymentInfo(product.getName()).account(sourceAccount)
             .transactionType(TransactionType.DEBIT).build());
 
-    PaymentTransaction result = null;
+    PaymentTransaction result;
 
     try {
-      credit(destinationAccountNo, product.getPrice());
+      credit(destinationAccountNo, product.getPrice(), destinationAccount.getVersion());
 
       result = paymentRepo.save(
           PaymentTransaction.builder()
               .transactionId(UUID.randomUUID())
               .amount(product.getPrice())
               .status(TransactionStatus.SUCCESS)
-              .createdAt(LocalDateTime.now())
               .paymentInfo(product.getName())
               .account(destinationAccount)
               .transactionType(TransactionType.CREDIT)
@@ -107,28 +121,26 @@ public class AccountServiceImp implements AccountService {
           e);
     }
 
-//    sendMessage(
-//        "Transaction Id:" + result.getTransactionId() + "Source Account: " + sourceAccountNumber
-//            + ", Destination Account: " + destinationAccountNo
-//            + ", Amount: -" + product.getPrice() + ", Status: " + TransactionStatus.SUCCESS
-//            + ", PaymentInfo: " + product.getName());
-
     try {
       sourceAccount = accountRepo.findByAccountNumber(sourceAccountNumber);
 
       // Tạo JSON object dưới dạng String
       String message = objectMapper.writeValueAsString(new TransactionMessage(
-          result.getTransactionId(), sourceAccountNumber, destinationAccountNo, product.getPrice(), sourceAccount.getBalance(), TransactionStatus.SUCCESS, LocalDateTime.now(), product.getName()
+          result.getTransactionId(), sourceAccountNumber, destinationAccountNo, product.getPrice(),
+          sourceAccount.getBalance(), TransactionStatus.SUCCESS, LocalDateTime.now().withNano(0),
+          product.getName()
       ));
 
-      System.out.println("Transaction: " + message);
-
+      logger.info("Sending message to source account {}: {}", sourceAccountNumber, message);
 
       kafkaTemplate.send("transaction", message);
 
     } catch (Exception e) {
-      System.err.println("Error sending Kafka message: " + e.getMessage());
+      logger.error("Failed to send transaction.", e);
     }
+
+    return result;
+
 
   }
 }

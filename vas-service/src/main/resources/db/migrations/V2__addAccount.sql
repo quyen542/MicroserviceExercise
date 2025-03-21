@@ -4,9 +4,10 @@ CREATE TABLE account (
                          profile_id BINARY(16) NOT NULL UNIQUE,
                          account_number VARCHAR(255) NOT NULL,
                          account_type VARCHAR(50) NOT NULL,
-                         balance DECIMAL(20, 2) NOT NULL
+                         balance DECIMAL(20, 2) NOT NULL,
+                         version INT DEFAULT 0 NOT NULL
 );
 
 -- Thêm dữ liệu mẫu
-INSERT INTO account (id, profile_id, account_number, account_type, balance)
-VALUES (1, UUID_TO_BIN('b2a1401e-ff13-11ef-bd65-0242ac120002'), '0907778888', 'EDA', 1000000.00);
+INSERT INTO account (id, profile_id, account_number, account_type, balance, version)
+VALUES (1, UUID_TO_BIN('b2a1401e-ff13-11ef-bd65-0242ac120002'), '0907778888', 'EDA', 1000000.00, 0);

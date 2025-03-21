@@ -13,14 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "payment-service", url = "http://localhost:8086")
 public interface PaymentClient {
 
-  @PostMapping("/payments/credit")
-  void credit(@RequestBody PaymentRequest request);
-
-  @PostMapping("/payments/debit")
-  void debit(@RequestBody PaymentRequest request);
-
   @PostMapping("/payments/purchase")
-  void purchase(@RequestBody PurchaseRequest request);
-
+  UUID purchase(@RequestBody PurchaseRequest request);
 
 }
