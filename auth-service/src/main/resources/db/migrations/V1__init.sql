@@ -13,7 +13,7 @@ CREATE TABLE user (
 );
 
 INSERT INTO profile (id, profile_id)
-VALUES (1, UUID_TO_BIN(UUID()));
+VALUES (1, UUID_TO_BIN('b2a1401e-ff13-11ef-bd65-0242ac120002'));
 
 INSERT INTO user (id, username, password, role, profile_id)
 VALUES (1, 'quyen', '123', 'customer', 1);

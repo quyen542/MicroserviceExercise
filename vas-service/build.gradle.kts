@@ -31,13 +31,13 @@ dependencies {
     // https://mvnrepository.com/artifact/org.flywaydb/flyway-core
     implementation("org.flywaydb:flyway-core:9.2.0")
 
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+    implementation("org.apache.logging.log4j:log4j-core:2.24.3")
 
-    // https://mvnrepository.com/artifact/log4j/log4j
-    implementation("log4j:log4j:1.2.16")
     implementation("org.modelmapper:modelmapper:3.1.1")
     annotationProcessor("org.projectlombok:lombok")
     implementation("org.projectlombok:lombok")
-    implementation ("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
     implementation("com.nimbusds:nimbus-jose-jwt:10.0.2")
 
@@ -45,6 +45,12 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka
     implementation("org.springframework.kafka:spring-kafka:3.3.3")
+
+    // https://mvnrepository.com/artifact/org.json/json
+    implementation("org.json:json:20250107")
+
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")
 
 
 }

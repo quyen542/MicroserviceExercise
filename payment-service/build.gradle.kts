@@ -26,7 +26,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    implementation("log4j:log4j:1.2.16")
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+    implementation("org.apache.logging.log4j:log4j-core:2.24.3")
     implementation("org.modelmapper:modelmapper:3.1.1")
     annotationProcessor("org.projectlombok:lombok")
     implementation("org.projectlombok:lombok")

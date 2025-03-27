@@ -13,6 +13,7 @@ import org.springframework.kafka.core.ProducerFactory;
 
 @Configuration
 public class KafkaProducerConfig {
+
   @Bean
   public ProducerFactory<String, String> producerFactory() {
     Map<String, Object> configProps = new HashMap<>();
@@ -21,6 +22,7 @@ public class KafkaProducerConfig {
     configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
     return new DefaultKafkaProducerFactory<>(configProps);
   }
+
   @Bean
   public KafkaTemplate<String, String> kafkaTemplate() {
     return new KafkaTemplate<>(producerFactory());

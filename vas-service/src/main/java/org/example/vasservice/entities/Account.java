@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.Data;
@@ -28,5 +29,8 @@ public class Account {
   private AccountType accountType;
 
   private BigDecimal balance;
+
+  @Version // Hibernate sẽ tự động thêm "WHERE version = ?" khi UPDATE
+  private Integer version;
 
 }
